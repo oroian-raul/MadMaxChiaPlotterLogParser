@@ -6,12 +6,18 @@ from data_exporter import DataExporter
 
 class LogParser:
 
-    def __init__(self, file_path: str, parser_name: str, parser_user: str, data_exporter: DataExporter):
+    def __init__(self, file_path: str, parser_name: str, parser_user: str,
+                 start_after_plot: str,
+                 dry_run: bool,
+                 data_exporter: DataExporter):
         self.data_exporter = data_exporter
         self.file = open(file_path, 'r')
         self.parser_name = parser_name
         self.host_name = socket.gethostname()
         self.parser_user = parser_user
+        self.start_after_plot = start_after_plot
+        self.plot_found = None
+        self.dry_run = dry_run
         self.start()
 
     def get_next_line(self):
@@ -43,14 +49,15 @@ class LogParser:
         line = self.get_next_line()
         p2_buckets = int(line[line.find("(") + 1:-2])
 
-        self.data_exporter.export_settings(DataExporter.Settings(host_name=self.host_name,
-                                                                 user_name=self.parser_user,
-                                                                 parser_name=self.parser_name,
-                                                                 plotter_hash=plotter_hash,
-                                                                 plotter_build=plotter_build,
-                                                                 threads=threads,
-                                                                 p1_buckets=p1_buckets,
-                                                                 p2_buckets=p2_buckets))
+        if not self.dry_run:
+            self.data_exporter.export_settings(DataExporter.Settings(host_name=self.host_name,
+                                                                     user_name=self.parser_user,
+                                                                     parser_name=self.parser_name,
+                                                                     plotter_hash=plotter_hash,
+                                                                     plotter_build=plotter_build,
+                                                                     threads=threads,
+                                                                     p1_buckets=p1_buckets,
+                                                                     p2_buckets=p2_buckets))
 
     def get_plot_name(self):
         line = self.get_next_line()
@@ -61,7 +68,12 @@ class LogParser:
 
     def export_plot_stats(self):
         plot_name = self.get_plot_name()
-        print(plot_name)
+        if self.start_after_plot is not None and not self.plot_found:
+            self.plot_found = plot_name == self.start_after_plot
+            print("Skipping plot:", plot_name)
+            return
+
+        print("Getting plot data: ", plot_name)
 
         line = self.get_next_line()
         while "Started copy" not in line:
@@ -82,45 +94,49 @@ class LogParser:
                     duration_index_start = line.find("took", table_index_end) + 5
                     duration_index_end = line.find("sec") - 1
                     duration = float(line[duration_index_start: duration_index_end])
-                    self.data_exporter.export_table_info(DataExporter.TableInfo(host_name=self.host_name,
-                                                                                user_name=self.parser_user,
-                                                                                parser_name=self.parser_name,
-                                                                                phase=phase,
-                                                                                table=table,
-                                                                                table_action=table_action,
-                                                                                duration=duration
-                                                                                ))
+                    if not self.dry_run:
+                        self.data_exporter.export_table_info(DataExporter.TableInfo(host_name=self.host_name,
+                                                                                    user_name=self.parser_user,
+                                                                                    parser_name=self.parser_name,
+                                                                                    phase=phase,
+                                                                                    table=table,
+                                                                                    table_action=table_action,
+                                                                                    duration=duration
+                                                                                    ))
 
             elif "Phase" in line:
                 duration = float(line[line.find("took") + 5: line.find("sec")])
-                self.data_exporter.export_phase_info(DataExporter.PhaseInfo(host_name=self.host_name,
-                                                                            user_name=self.parser_user,
-                                                                            parser_name=self.parser_name,
-                                                                            phase=phase,
-                                                                            duration=duration,
-
-                                                                            ))
+                if not self.dry_run:
+                    self.data_exporter.export_phase_info(DataExporter.PhaseInfo(host_name=self.host_name,
+                                                                                user_name=self.parser_user,
+                                                                                parser_name=self.parser_name,
+                                                                                phase=phase,
+                                                                                duration=duration,
+                                                                                ))
             elif "Total" in line:
                 duration = float(line[line.find("was") + 4: line.find("sec")])
-                self.data_exporter.export_plot_creation_info(DataExporter.PlotCreationInfo(host_name=self.host_name,
-                                                                                           user_name=self.parser_user,
-                                                                                           parser_name=self.parser_name,
-                                                                                           plot_name=plot_name,
-                                                                                           duration=duration
-                                                                                           ))
+                if not self.dry_run:
+                    self.data_exporter.export_plot_creation_info(
+                        DataExporter.PlotCreationInfo(host_name=self.host_name,
+                                                      user_name=self.parser_user,
+                                                      parser_name=self.parser_name,
+                                                      plot_name=plot_name,
+                                                      duration=duration
+                                                      ))
             elif "Copy to" in line:
                 duration = float(line[line.rfind("took") + 5: line.rfind("sec")])
-                print("COPYDURATION", duration)
-                self.data_exporter.export_plot_copy_info(DataExporter.PlotCopyInfo(host_name=self.host_name,
-                                                                                   user_name=self.parser_user,
-                                                                                   parser_name=self.parser_name,
-                                                                                   plot_name=plot_name,
-                                                                                   duration=duration
-                                                                                   ))
+                if not self.dry_run:
+                    self.data_exporter.export_plot_copy_info(DataExporter.PlotCopyInfo(host_name=self.host_name,
+                                                                                       user_name=self.parser_user,
+                                                                                       parser_name=self.parser_name,
+                                                                                       plot_name=plot_name,
+                                                                                       duration=duration
+                                                                                       ))
             line = self.get_next_line()
 
     def start(self):
-        self.export_settings()
+        if self.start_after_plot is None:
+            self.export_settings()
 
         while True:
             self.export_plot_stats()
