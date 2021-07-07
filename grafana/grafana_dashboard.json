@@ -16,7 +16,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 1,
-  "iteration": 1625501678628,
+  "iteration": 1625583251308,
   "links": [],
   "panels": [
     {
@@ -142,10 +142,47 @@
             ]
           }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Time"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 155
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "count"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "host_name"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 250
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
-        "h": 5,
+        "h": 3,
         "w": 24,
         "x": 0,
         "y": 3
@@ -153,7 +190,8 @@
       "id": 14,
       "options": {
         "frameIndex": 0,
-        "showHeader": true
+        "showHeader": true,
+        "sortBy": []
       },
       "pluginVersion": "8.0.3",
       "repeat": null,
@@ -233,10 +271,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 5,
+        "h": 3,
         "w": 24,
         "x": 0,
-        "y": 8
+        "y": 6
       },
       "id": 13,
       "options": {
@@ -247,12 +285,6 @@
       "targets": [
         {
           "groupBy": [
-            {
-              "params": [
-                "user_name"
-              ],
-              "type": "tag"
-            },
             {
               "params": [
                 "host_name"
@@ -314,6 +346,123 @@
       "fieldConfig": {
         "defaults": {
           "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "median"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "s"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      },
+      "id": 20,
+      "options": {
+        "showHeader": true
+      },
+      "pluginVersion": "8.0.3",
+      "targets": [
+        {
+          "groupBy": [
+            {
+              "params": [
+                "host_name"
+              ],
+              "type": "tag"
+            },
+            {
+              "params": [
+                "parser_name"
+              ],
+              "type": "tag"
+            }
+          ],
+          "measurement": "plot_info",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "query": "SELECT median(\"duration\") FROM \"plot_info\" WHERE (\"parser_name\" =~ /^$parser$/ AND \"host_name\" =~ /^$host$/ AND \"user_name\" =~ /^$user$/) AND $timeFilter GROUP BY \"host_name\", \"parser_name\"",
+          "rawQuery": false,
+          "refId": "A",
+          "resultFormat": "table",
+          "select": [
+            [
+              {
+                "params": [
+                  "duration"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "median"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "parser_name",
+              "operator": "=~",
+              "value": "/^$parser$/"
+            },
+            {
+              "condition": "AND",
+              "key": "host_name",
+              "operator": "=~",
+              "value": "/^$host$/"
+            },
+            {
+              "condition": "AND",
+              "key": "user_name",
+              "operator": "=~",
+              "value": "/^$user$/"
+            }
+          ]
+        }
+      ],
+      "title": "Average plot time per parser",
+      "type": "table"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
             "mode": "palette-classic"
           },
           "custom": {
@@ -366,7 +515,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 13
+        "y": 12
       },
       "id": 6,
       "options": {
@@ -492,13 +641,13 @@
         "h": 9,
         "w": 24,
         "x": 0,
-        "y": 21
+        "y": 20
       },
       "id": 10,
       "options": {
         "legend": {
           "calcs": [],
-          "displayMode": "list",
+          "displayMode": "hidden",
           "placement": "bottom"
         },
         "tooltip": {
@@ -509,6 +658,12 @@
       "targets": [
         {
           "groupBy": [
+            {
+              "params": [
+                "$interval"
+              ],
+              "type": "time"
+            },
             {
               "params": [
                 "host_name"
@@ -526,6 +681,12 @@
                 "phase"
               ],
               "type": "tag"
+            },
+            {
+              "params": [
+                "previous"
+              ],
+              "type": "fill"
             }
           ],
           "measurement": "phase_info",
@@ -540,6 +701,10 @@
                   "duration"
                 ],
                 "type": "field"
+              },
+              {
+                "params": [],
+                "type": "median"
               }
             ]
           ],
@@ -566,9 +731,480 @@
       ],
       "title": "phase times",
       "type": "timeseries"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 29
+      },
+      "id": 16,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "hidden",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "groupBy": [
+            {
+              "params": [
+                "$interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "host_name"
+              ],
+              "type": "tag"
+            },
+            {
+              "params": [
+                "parser_name"
+              ],
+              "type": "tag"
+            },
+            {
+              "params": [
+                "table"
+              ],
+              "type": "tag"
+            },
+            {
+              "params": [
+                "previous"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "table_info",
+          "orderByTime": "DESC",
+          "policy": "default",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "duration"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "median"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "host_name",
+              "operator": "=~",
+              "value": "/^$host$/"
+            },
+            {
+              "condition": "AND",
+              "key": "parser_name",
+              "operator": "=~",
+              "value": "/^$parser$/"
+            },
+            {
+              "condition": "AND",
+              "key": "user_name",
+              "operator": "=~",
+              "value": "/^$user$/"
+            },
+            {
+              "condition": "AND",
+              "key": "phase",
+              "operator": "=",
+              "value": "1"
+            }
+          ]
+        }
+      ],
+      "title": "phase 1 tables times",
+      "type": "timeseries"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 38
+      },
+      "id": 19,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "hidden",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "groupBy": [
+            {
+              "params": [
+                "$interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "host_name"
+              ],
+              "type": "tag"
+            },
+            {
+              "params": [
+                "parser_name"
+              ],
+              "type": "tag"
+            },
+            {
+              "params": [
+                "table"
+              ],
+              "type": "tag"
+            },
+            {
+              "params": [
+                "table_action"
+              ],
+              "type": "tag"
+            },
+            {
+              "params": [
+                "previous"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "table_info",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "duration"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "median"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "host_name",
+              "operator": "=~",
+              "value": "/^$host$/"
+            },
+            {
+              "condition": "AND",
+              "key": "parser_name",
+              "operator": "=~",
+              "value": "/^$parser$/"
+            },
+            {
+              "condition": "AND",
+              "key": "user_name",
+              "operator": "=~",
+              "value": "/^$user$/"
+            },
+            {
+              "condition": "AND",
+              "key": "phase",
+              "operator": "=",
+              "value": "2"
+            }
+          ]
+        }
+      ],
+      "title": "phase 2 tables times",
+      "type": "timeseries"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 47
+      },
+      "id": 17,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "hidden",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "groupBy": [
+            {
+              "params": [
+                "$interval"
+              ],
+              "type": "time"
+            },
+            {
+              "params": [
+                "host_name"
+              ],
+              "type": "tag"
+            },
+            {
+              "params": [
+                "parser_name"
+              ],
+              "type": "tag"
+            },
+            {
+              "params": [
+                "table"
+              ],
+              "type": "tag"
+            },
+            {
+              "params": [
+                "table_action"
+              ],
+              "type": "tag"
+            },
+            {
+              "params": [
+                "previous"
+              ],
+              "type": "fill"
+            }
+          ],
+          "measurement": "table_info",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "duration"
+                ],
+                "type": "field"
+              },
+              {
+                "params": [],
+                "type": "median"
+              }
+            ]
+          ],
+          "tags": [
+            {
+              "key": "host_name",
+              "operator": "=~",
+              "value": "/^$host$/"
+            },
+            {
+              "condition": "AND",
+              "key": "parser_name",
+              "operator": "=~",
+              "value": "/^$parser$/"
+            },
+            {
+              "condition": "AND",
+              "key": "user_name",
+              "operator": "=~",
+              "value": "/^$user$/"
+            },
+            {
+              "condition": "AND",
+              "key": "phase",
+              "operator": "=",
+              "value": "3"
+            }
+          ]
+        }
+      ],
+      "title": "phase 3 tables times",
+      "type": "timeseries"
     }
   ],
-  "refresh": false,
+  "refresh": "10s",
   "schemaVersion": 30,
   "style": "dark",
   "tags": [],
@@ -577,7 +1213,7 @@
       {
         "allValue": null,
         "current": {
-          "selected": false,
+          "selected": true,
           "text": [
             "All"
           ],
@@ -586,7 +1222,7 @@
           ]
         },
         "datasource": null,
-        "definition": "SHOW TAG VALUES FROM plot_info with key=user_name",
+        "definition": "SHOW TAG VALUES FROM table_info with key=user_name",
         "description": null,
         "error": null,
         "hide": 0,
@@ -595,7 +1231,7 @@
         "multi": true,
         "name": "user",
         "options": [],
-        "query": "SHOW TAG VALUES FROM plot_info with key=user_name",
+        "query": "SHOW TAG VALUES FROM table_info with key=user_name",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -605,7 +1241,7 @@
       {
         "allValue": null,
         "current": {
-          "selected": false,
+          "selected": true,
           "text": [
             "All"
           ],
@@ -614,7 +1250,7 @@
           ]
         },
         "datasource": null,
-        "definition": "SHOW TAG VALUES FROM plot_info with key=host_name where user_name =~ /^$user$/",
+        "definition": "SHOW TAG VALUES FROM table_info with key=host_name where user_name =~ /^$user$/",
         "description": null,
         "error": null,
         "hide": 0,
@@ -623,7 +1259,7 @@
         "multi": true,
         "name": "host",
         "options": [],
-        "query": "SHOW TAG VALUES FROM plot_info with key=host_name where user_name =~ /^$user$/",
+        "query": "SHOW TAG VALUES FROM table_info with key=host_name where user_name =~ /^$user$/",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -633,7 +1269,7 @@
       {
         "allValue": null,
         "current": {
-          "selected": false,
+          "selected": true,
           "text": [
             "All"
           ],
@@ -642,7 +1278,7 @@
           ]
         },
         "datasource": null,
-        "definition": "SHOW TAG VALUES FROM plot_info with key=parser_name where user_name =~ /^$user$/ and host_name =~ /^$host$/",
+        "definition": "SHOW TAG VALUES FROM table_info with key=parser_name where user_name =~ /^$user$/ and host_name =~ /^$host$/",
         "description": null,
         "error": null,
         "hide": 0,
@@ -651,7 +1287,7 @@
         "multi": true,
         "name": "parser",
         "options": [],
-        "query": "SHOW TAG VALUES FROM plot_info with key=parser_name where user_name =~ /^$user$/ and host_name =~ /^$host$/",
+        "query": "SHOW TAG VALUES FROM table_info with key=parser_name where user_name =~ /^$user$/ and host_name =~ /^$host$/",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -661,12 +1297,12 @@
     ]
   },
   "time": {
-    "from": "2021-07-05T13:06:45.506Z",
-    "to": "2021-07-05T16:14:43.215Z"
+    "from": "now-6h",
+    "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "main",
   "uid": "_uKFSPz7k",
-  "version": 58
+  "version": 81
 }

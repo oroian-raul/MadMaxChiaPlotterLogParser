@@ -50,8 +50,19 @@ class InfluxExporter(DataExporter):
 
         self.write_api.write(self.bucket, self.org, settings_point)
 
-    def export_plot_info(self, data: DataExporter.PlotInfo):
+    def export_plot_creation_info(self, data: DataExporter.PlotCreationInfo):
         settings_point = Point("plot_info") \
+            .tag("host_name", data.host_name) \
+            .tag("user_name", data.user_name) \
+            .tag("parser_name", data.parser_name) \
+            .field("plot_name", data.plot_name) \
+            .field("duration", data.duration) \
+            .time(datetime.utcnow(), WritePrecision.NS)
+
+        self.write_api.write(self.bucket, self.org, settings_point)
+
+    def export_plot_copy_info(self, data: DataExporter.PlotCopyInfo):
+        settings_point = Point("plot_copy_info") \
             .tag("host_name", data.host_name) \
             .tag("user_name", data.user_name) \
             .tag("parser_name", data.parser_name) \
