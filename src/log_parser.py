@@ -15,12 +15,14 @@ class LogParser:
         self.start()
 
     def get_next_line(self):
-        line = self.file.readline()[:-1]
-        while len(line) == 0 or line is None:
-            time.sleep(1)
-            line = self.file.readline()[:-1]
+        line = self.file.readline()
+        while len(line) <= 1:
+            # only sleep for end of file, not for empty line
+            if len(line) == 0:
+                time.sleep(1)
+            line = self.file.readline()
 
-        return line
+        return line[:-1]
 
     def export_settings(self):
         line = self.get_next_line()
@@ -100,12 +102,21 @@ class LogParser:
                                                                             ))
             elif "Total" in line:
                 duration = float(line[line.find("was") + 4: line.find("sec")])
-                self.data_exporter.export_plot_info(DataExporter.PlotInfo(host_name=self.host_name,
-                                                                          user_name=self.parser_user,
-                                                                          parser_name=self.parser_name,
-                                                                          plot_name=plot_name,
-                                                                          duration=duration
-                                                                          ))
+                self.data_exporter.export_plot_creation_info(DataExporter.PlotCreationInfo(host_name=self.host_name,
+                                                                                           user_name=self.parser_user,
+                                                                                           parser_name=self.parser_name,
+                                                                                           plot_name=plot_name,
+                                                                                           duration=duration
+                                                                                           ))
+            elif "Copy to" in line:
+                duration = float(line[line.rfind("took") + 5: line.rfind("sec")])
+                print("COPYDURATION", duration)
+                self.data_exporter.export_plot_copy_info(DataExporter.PlotCopyInfo(host_name=self.host_name,
+                                                                                   user_name=self.parser_user,
+                                                                                   parser_name=self.parser_name,
+                                                                                   plot_name=plot_name,
+                                                                                   duration=duration
+                                                                                   ))
             line = self.get_next_line()
 
     def start(self):
