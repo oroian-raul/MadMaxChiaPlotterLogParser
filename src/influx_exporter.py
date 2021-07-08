@@ -68,6 +68,7 @@ class InfluxExporter(DataExporter):
             .tag("parser_name", data.parser_name) \
             .field("plot_name", data.plot_name) \
             .field("duration", data.duration) \
+            .field("copy_success", data.copy_success) \
             .time(datetime.utcnow(), WritePrecision.NS)
 
         self.write_api.write(self.bucket, self.org, settings_point)
