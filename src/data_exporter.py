@@ -16,7 +16,7 @@ class DataExporter:
                                                 "plot_name", "duration"])
 
     PlotCopyInfo = namedtuple("TableInfo", ["host_name", "user_name", "parser_name",
-                                            "plot_name", "duration"])
+                                            "plot_name", "duration", "copy_success"])
 
     def __init__(self, database_address: str, bucket: str, org: str, token: str):
         raise NotImplementedError('Not implemented')

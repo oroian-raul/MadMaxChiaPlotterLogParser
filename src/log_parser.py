@@ -123,14 +123,18 @@ class LogParser:
                                                       plot_name=plot_name,
                                                       duration=duration
                                                       ))
-            elif "Copy to" in line and "failed" not in line:
-                duration = float(line[line.rfind("took") + 5: line.rfind("sec")])
+            elif "Copy to" in line:
+                duration = 0
+                copy_success = "failed" not in line
+                if copy_success:
+                    duration = float(line[line.rfind("took") + 5: line.rfind("sec")])
                 if not self.dry_run:
                     self.data_exporter.export_plot_copy_info(DataExporter.PlotCopyInfo(host_name=self.host_name,
                                                                                        user_name=self.parser_user,
                                                                                        parser_name=self.parser_name,
                                                                                        plot_name=plot_name,
-                                                                                       duration=duration
+                                                                                       duration=duration,
+                                                                                       copy_success=copy_success
                                                                                        ))
             line = self.get_next_line()
 
