@@ -124,7 +124,7 @@ class LogParser:
                                                       duration=duration
                                                       ))
             elif "Copy to" in line:
-                duration = 0
+                duration = .0
                 copy_success = "failed" not in line
                 if copy_success:
                     duration = float(line[line.rfind("took") + 5: line.rfind("sec")])
