@@ -1,16 +1,22 @@
 from datetime import datetime
 
 from influxdb_client import InfluxDBClient, Point, WritePrecision
-from influxdb_client.client.write_api import SYNCHRONOUS
+from influxdb_client.client.write_api import ASYNCHRONOUS
 from data_exporter import DataExporter
 
 
 class InfluxExporter(DataExporter):
     def __init__(self, database_address: str, bucket: str, org: str, token: str):
-        self.db_client = client = InfluxDBClient(url=database_address, token=token)
-        self.write_api = client.write_api(write_options=SYNCHRONOUS)
+        self.db_client = InfluxDBClient(url=database_address, token=token, retries=0)
+        self.write_api = self.db_client.write_api(write_options=ASYNCHRONOUS)
         self.bucket = bucket
         self.org = org
+
+    def write(self, point):
+        try:
+            self.write_api.write(self.bucket, self.org, point)
+        except Exception as e:
+            print(str(e))
 
     def export_settings(self, data: DataExporter.Settings):
         point = Point("settings") \
@@ -24,7 +30,7 @@ class InfluxExporter(DataExporter):
             .field("p2_buckets", data.p2_buckets) \
             .time(datetime.utcnow(), WritePrecision.NS)
 
-        self.write_api.write(self.bucket, self.org, point)
+        self.write(point)
 
     def export_table_info(self, data: DataExporter.TableInfo):
         point = Point("table_info") \
@@ -37,10 +43,10 @@ class InfluxExporter(DataExporter):
             .field("duration", data.duration) \
             .time(datetime.utcnow(), WritePrecision.NS)
 
-        self.write_api.write(self.bucket, self.org, point)
+        self.write(point)
 
     def export_phase_info(self, data: DataExporter.PhaseInfo):
-        settings_point = Point("phase_info") \
+        point = Point("phase_info") \
             .tag("host_name", data.host_name) \
             .tag("user_name", data.user_name) \
             .tag("parser_name", data.parser_name) \
@@ -48,10 +54,10 @@ class InfluxExporter(DataExporter):
             .field("duration", data.duration) \
             .time(datetime.utcnow(), WritePrecision.NS)
 
-        self.write_api.write(self.bucket, self.org, settings_point)
+        self.write(point)
 
     def export_plot_creation_info(self, data: DataExporter.PlotCreationInfo):
-        settings_point = Point("plot_info") \
+        point = Point("plot_info") \
             .tag("host_name", data.host_name) \
             .tag("user_name", data.user_name) \
             .tag("parser_name", data.parser_name) \
@@ -59,10 +65,10 @@ class InfluxExporter(DataExporter):
             .field("duration", data.duration) \
             .time(datetime.utcnow(), WritePrecision.NS)
 
-        self.write_api.write(self.bucket, self.org, settings_point)
+        self.write(point)
 
     def export_plot_copy_info(self, data: DataExporter.PlotCopyInfo):
-        settings_point = Point("plot_copy_info") \
+        point = Point("plot_copy_info") \
             .tag("host_name", data.host_name) \
             .tag("user_name", data.user_name) \
             .tag("parser_name", data.parser_name) \
@@ -71,4 +77,4 @@ class InfluxExporter(DataExporter):
             .field("duration", data.duration) \
             .time(datetime.utcnow(), WritePrecision.NS)
 
-        self.write_api.write(self.bucket, self.org, settings_point)
+        self.write(point)
