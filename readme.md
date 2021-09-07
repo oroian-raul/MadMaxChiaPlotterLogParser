@@ -3,6 +3,7 @@
 Tested with Madmax for windows:
 * https://github.com/stotiks/chia-plotter/releases/tag/v0.0.6   
 * https://github.com/stotiks/chia-plotter/releases/tag/v0.1.1
+* https://github.com/stotiks/chia-plotter/releases/tag/v0.1.5
 
 Tested with InfuxDB V2.
 
